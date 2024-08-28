@@ -25,8 +25,10 @@ class options:
         
 
 @dataclass
-class car: #maybe move this into house
+class charger:
     load_power: float
+    house_id: str = "e658d337f118a91c07ecc90b1482f639" # move to state
+    charger_id: str = "78ca94b33412b017cf3b53429b9a0b49" # move to state
 
     def set_current_limit(self):
         pass
