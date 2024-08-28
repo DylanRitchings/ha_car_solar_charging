@@ -58,11 +58,11 @@ class Charger:
         return watt(power)/self.CHARGE_VOLTS
 
     def set_power_limit(self, new_load_power):
-        current = to_current(new_load_power)
-        if charge_amps_floored < 6:
+        current = self.to_current(new_load_power)
+        if current < 6:
             self.switch_charger("off")
             return ""
-        elif self.available_current != charge_amps:
+        elif self.available_current != current:
             self.set_current_limit(current)
         self.switch_charger("on")
 
