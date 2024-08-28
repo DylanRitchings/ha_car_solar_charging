@@ -4,8 +4,8 @@ charge_type=input_select.car_charging
 
 @dataclass
 class house:
-    INVERTER_MAX_KW = 2.67
-    SOLAR_MAX_KW = 3.67
+    INVERTER_MAX_KW: float = 2.67
+    SOLAR_MAX_KW: float = 3.67
     
     solar_power: float # kw
     load_power: float # kw
