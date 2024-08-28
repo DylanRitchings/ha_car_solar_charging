@@ -17,12 +17,12 @@ class house:
 
 @dataclass
 class options:
-    keep_battery_at: int # %
+    battery_min: int # %
     charge_type: str
     
     def __init__(self):
         self.charge_type = input_select.car_charging
-        self.keep_battery_at = 30
+        self.battery_min = 30
         
 
 @dataclass
