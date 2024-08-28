@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-CHARGE_VOLTS = 230
-INVERTER_MAX_KW = 2.67
-SOLAR_MAX_KW = 3.67
+
 charge_type=input_select.car_charging
 
 @dataclass
 class house:
+    INVERTER_MAX_KW = 2.67
+    SOLAR_MAX_KW = 3.67
+    
     solar_power: float # kw
     load_power: float # kw
     grid_consumption: float # kw, this can be negative, use octopus
@@ -26,9 +27,12 @@ class options:
 
 @dataclass
 class charger:
+    CHARGE_VOLTS = 230
+    
     load_power: float
     house_id: str = "e658d337f118a91c07ecc90b1482f639" # move to state
     charger_id: str = "78ca94b33412b017cf3b53429b9a0b49" # move to state
+
 
     def set_current_limit(self):
         pass
