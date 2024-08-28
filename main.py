@@ -1,13 +1,28 @@
 from dataclasses import dataclass
+CHARGE_VOLTS = 230
+INVERTER_MAX_KW = 2.67
+SOLAR_MAX_KW = 3.67
+charge_type=input_select.car_charging
 
 @dataclass
 class house:
-    solar_power: float
-    load_power: float 
-    grid_consumption: float # this can be negative, use octopus
+    solar_power: float # kw
+    load_power: float # kw
+    grid_consumption: float # kw, this can be negative, use octopus
+    battery_charge: float # %
     
+    def __init__(self):
+        pass
+
+@dataclass
+class options:
+    keep_battery_at: int # %
+    charge_type: str
     
-    
+    def __init__(self):
+        self.charge_type = input_select.car_charging
+        self.keep_battery_at = 30
+        
 
 @dataclass
 class car: #maybe move this into house
@@ -24,10 +39,7 @@ class car: #maybe move this into house
 @service
 def sync_car_to_solar():
     """sync car to solar"""
-    CHARGE_VOLTS = 230
-    INVERTER_MAX_KW = 2.67
-    SOLAR_MAX_KW = 3.67
-    charge_type=input_select.car_charging
+
     
 
     try:
