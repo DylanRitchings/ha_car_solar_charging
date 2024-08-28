@@ -75,13 +75,14 @@ class Charger:
 
 @service 
 def main():
-    house = House()
     options = Options()
     charger = Charger()
 
     if options.charge_type == "off":
         charger.switch_charger("off")
         return ""
+
+    house = House()
 
     house_only_load_power = house.load_power - charger.load_power 
     
