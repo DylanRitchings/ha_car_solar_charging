@@ -1,24 +1,32 @@
 from dataclasses import dataclass
 
-charge_type=input_select.car_charging
+def kw(value: str):
+    return float(value)*1000
+
+def watt(value: str):
+    return float(value)
 
 @dataclass
-class house:
-    INVERTER_MAX_KW: float = 2.67
-    SOLAR_MAX_KW: float = 3.67
+class House:
+    INVERTER_MAX = kw(2.67)
+    SOLAR_MAX = kw(3.67)
     
-    solar_power: float # kw
-    load_power: float # kw
-    grid_consumption: float # kw, this can be negative, use octopus
-    battery_charge: float # %
+    solar_power: float 
+    load_power: float 
+    grid_consumption: float 
+    battery_charge: float
 
     #TODO maybe put options and charger in here?
     
     def __init__(self):
-        pass
+        self.solar_power = kw(sensor.foxess_solar_power)
+        self.load_power = kw(sensor.foxess_load_power)
+        self.grid_consumption = watt(sensor.octopus_energy_electricity_23l3042499_2700008005722_current_demand)
+        self.battery_charge = float(sensor.foxess_bat_soc)
+        
 
 @dataclass
-class options:
+class Options:
     battery_min: int # %
     charge_type: str
     
@@ -28,22 +36,44 @@ class options:
         
 
 @dataclass
-class charger:
+class Charger:
     CHARGE_VOLTS = 230
     
     load_power: float
+    available_current: float
+
     house_id: str = "e658d337f118a91c07ecc90b1482f639" # move to state
     charger_id: str = "78ca94b33412b017cf3b53429b9a0b49" # move to state
-
-
-    def set_current_limit(self):
-        pass
-
-    def set_charging_on_off(self):
-        pass
     
+    def __init__(self):
+        self.load_power = max(0, float(sensor.car_charging_kw))
+        self.available_current = int(float(state.get("number.28_oriel_road_available_current"))
+
+    def to_current(power):
+        return watt(power)/self.CHARGE_VOLTS
+        
+                                     
+    def set_current_limit(self, new_load_power):          
+        current = to_current(new_load_power)
+        
+        if self.available_current != charge_amps:
+            self._limit_current(current)
+            zaptec.resume_charging(device_id=self.charger_id)
+            self.switch_charger("on")
+
+    def _limit_current(self, current: float):
+        zaptec.limit_current(blocking=False, return_response=False, device_id=self.house_id, available_current=current)
     
+    def switch_charger(self, on_off: str):
+        switch.charger_charging = on_off
+
+    def 
     
+def main():
+    house = House()
+    options = Options()
+    charger = Charger()
+
 @service
 def sync_car_to_solar():
     """sync car to solar"""
