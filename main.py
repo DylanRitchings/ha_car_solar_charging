@@ -1,3 +1,26 @@
+from dataclasses import dataclass
+
+@dataclass
+class house:
+    solar_power: float
+    load_power: float 
+    grid_consumption: float # this can be negative, use octopus
+    
+    
+    
+
+@dataclass
+class car: #maybe move this into house
+    load_power: float
+
+    def set_current_limit(self):
+        pass
+
+    def set_charging_on_off(self):
+        pass
+    
+    
+    
 @service
 def sync_car_to_solar():
     """sync car to solar"""
