@@ -11,6 +11,8 @@ class house:
     load_power: float # kw
     grid_consumption: float # kw, this can be negative, use octopus
     battery_charge: float # %
+
+    #TODO maybe put options and charger in here?
     
     def __init__(self):
         pass
