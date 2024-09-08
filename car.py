@@ -30,7 +30,8 @@ class Charger:
         self.CHARGE_VOLTS = 230
         self.house_id = "e658d337f118a91c07ecc90b1482f639"  # move to state
         self.charger_id = "78ca94b33412b017cf3b53429b9a0b49"  # move to state
-        self.load_power = max(0, float(sensor.car_charging_kw))
+        self.load_power = kw(max(0, float(sensor.car_charging_kw)))
+        log.warning("load power:" + str(self.load_power))
         self.available_current = float(
             state.get("number.28_oriel_road_available_current"))
 
@@ -68,6 +69,7 @@ class Charger:
 class Calculations:
 
     def __init__(self, house: House, charger: Charger, options: Options):
+        #todo put charger.load_power in avaliable power calculations maybe do an if statement checking if charging is on
         self.house_only_load_power = max(
             0, house.load_power - charger.load_power)
         self.available_solar_power = max(
@@ -111,6 +113,7 @@ def sync_car_to_solar():
     charger = Charger()
 
     if options.charge_type == "Off":
+        charger.limit_current(0)
         charger.switch_charger("off")
         return ""
 
@@ -121,11 +124,11 @@ def sync_car_to_solar():
     new_power = None
 
     # TODO change to hashmap?
-    if options.charge_type == "Slow-Battery (Battery or Solar)" and self.bat_has_charge:
+    if options.charge_type == "Slow-Battery (Battery or Solar)" and calc.bat_has_charge:
         new_power = calc.slow_battery_power
-    elif options.charge_type == "Battery (Battery & Solar)" and self.bat_has_charge:
+    elif options.charge_type == "Battery (Battery & Solar)" and calc.bat_has_charge:
         new_power = calc.fast_battery_power
-    elif options.charge_type == "Solar" or ("Battery" in options.charge_type and not self.bat_has_charge):
+    elif options.charge_type == "Solar" or ("Battery" in options.charge_type and not calc.bat_has_charge):
         new_power = calc.solar_power
     elif options.charge_type == "Grid":
         new_power = calc.grid_power
