@@ -106,7 +106,7 @@ class Calculations:
                           value=value, 	new_attributes=attributes)
 
 def set_6_amps(charger):
-    charger.limit_current(6)
+    charger.set_current_limit(6)
     charger.switch_charger("on")
     return ""
 
