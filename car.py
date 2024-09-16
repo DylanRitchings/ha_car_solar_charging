@@ -113,8 +113,7 @@ def sync_car_to_solar():
     charger = Charger()
 
     if options.charge_type == "Off":
-        charger.limit_current(0)
-        charger.switch_charger("off")
+        charger.set_power_limit(0)
         return ""
 
     house = House()
@@ -133,9 +132,15 @@ def sync_car_to_solar():
     elif options.charge_type == "Grid":
         new_power = calc.grid_power
     elif options.charge_type == "6 Amps (Slowest)":
-        charger.limit_current(6)
+        charger.set_current_limit(6)
         charger.switch_charger("on")
         return ""
 
     if new_power:
+        state.set(var_name=f"dylscript.new_power",
+                          value=new_power, 	new_attributes={
+                "device_class": "power",
+                "unit": "W",
+                "state_class": "measurement"
+            })
         charger.set_power_limit(new_power)
