@@ -119,7 +119,7 @@ def get_new_power(charge_type: str, calc: Calculations, charger: Charger):
         "6 Amps (Slowest)": lambda: set_6_amps(charger)
     }
 
-    return power_map.get(harge_type, lambda: calc.solar_power)()
+    return power_map.get(charge_type, lambda: calc.solar_power)()
 
 
 @service
