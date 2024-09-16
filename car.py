@@ -137,7 +137,7 @@ def sync_car_to_solar():
 
     new_power = None
 
-    new_power = get_power(options.charge_type, calc, charger)
+    new_power = get_new_power(options.charge_type, calc, charger)
 
     if new_power:
         state.set(var_name=f"dylscript.new_power",
