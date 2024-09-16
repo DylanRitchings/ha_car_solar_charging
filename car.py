@@ -1,9 +1,8 @@
+def kw(value: str | int | float) -> float:
+    return float(value) * 1000
 
-def kw(value: str):
-    return float(value)*1000
 
-
-def watt(value: str):
+def watt(value: str | int | float) -> float:
     return float(value)
 
 
@@ -15,7 +14,8 @@ class House:
         self.solar_power = kw(sensor.foxess_solar_power)
         self.load_power = kw(sensor.foxess_load_power)
         self.grid_consumption = watt(
-            sensor.octopus_energy_electricity_23l3042499_2700008005722_current_demand)
+            sensor.octopus_energy_electricity_23l3042499_2700008005722_current_demand
+        )
         self.battery_charge = float(sensor.foxess_bat_soc)
 
 
@@ -33,10 +33,11 @@ class Charger:
         self.load_power = kw(max(0, float(sensor.car_charging_kw)))
         log.warning("load power:" + str(self.load_power))
         self.available_current = float(
-            state.get("number.28_oriel_road_available_current"))
+            state.get("number.28_oriel_road_available_current")
+        )
 
     def to_current(self, power):
-        return watt(power)/self.CHARGE_VOLTS
+        return watt(power) / self.CHARGE_VOLTS
 
     def set_power_limit(self, new_load_power):
 
@@ -55,7 +56,7 @@ class Charger:
             blocking=False,
             return_response=False,
             device_id=self.house_id,
-            available_current=int(current)
+            available_current=int(current),
         )
 
     def switch_charger(self, on_off: str):
@@ -69,23 +70,25 @@ class Charger:
 class Calculations:
 
     def __init__(self, house: House, charger: Charger, options: Options):
-        #todo put charger.load_power in avaliable power calculations maybe do an if statement checking if charging is on
-        self.house_only_load_power = max(
-            0, house.load_power - charger.load_power)
+        # todo put charger.load_power in avaliable power calculations maybe do an if statement checking if charging is on
+        self.house_only_load_power = max(0, house.load_power - charger.load_power)
         self.available_solar_power = max(
-            0, house.solar_power - self.house_only_load_power)  # maybe put - 100
+            0, house.solar_power - self.house_only_load_power
+        )  # maybe put - 100
         self.bat_has_charge = house.battery_charge > options.battery_min
-        self.solar_max_power = max(
-            0, house.SOLAR_MAX - self.house_only_load_power)
+        self.solar_max_power = max(0, house.SOLAR_MAX - self.house_only_load_power)
         self.available_battery_power = max(
-            0, house.INVERTER_MAX - self.house_only_load_power)
+            0, house.INVERTER_MAX - self.house_only_load_power
+        )
 
         self.slow_battery_power = max(
-            self.available_battery_power, self.solar_max_power)
+            self.available_battery_power, self.solar_max_power
+        )
         self.fast_battery_power = min(
-            self.available_solar_power+self.available_battery_power, house.INVERTER_MAX)
-        self.solar_power = min(
-            self.available_solar_power, self.solar_max_power)
+            self.available_solar_power + self.available_battery_power,
+            house.INVERTER_MAX,
+        )
+        self.solar_power = min(self.available_solar_power, self.solar_max_power)
         self.grid_power = kw(7.36)
 
         self._set_states()
@@ -95,31 +98,38 @@ class Calculations:
             attributes = {
                 "device_class": "power",
                 "unit": "W",
-                "state_class": "measurement"
+                "state_class": "measurement",
             }
             if key == "bat_has_charge":
-                attributes = {
-                    "device_class": "boolean"
-                }
-            if not key.startswith('_'):
-                state.set(var_name=f"dylscript.{key}",
-                          value=value, 	new_attributes=attributes)
+                attributes = {"device_class": "boolean"}
+            if not key.startswith("_"):
+                state.set(
+                    var_name=f"dylscript.{key}", value=value, new_attributes=attributes
+                )
 
-def set_6_amps(charger):
+
+def set_6_amps(charger) -> None:
     charger.set_current_limit(6)
     charger.switch_charger("on")
-    return ""
+    return None
 
-def get_new_power(charge_type: str, calc: Calculations, charger: Charger):
+
+def get_new_power(
+    charge_type: str, calc: Calculations, charger: Charger
+) -> float | None:
     power_map = {
-        "Slow-Battery (Battery or Solar)": lambda: calc.slow_battery_power if calc.bat_has_charge else calc.solar_power,
-        "Battery (Battery & Solar)": lambda: calc.fast_battery_power if calc.bat_has_charge else calc.solar_power,
-        "Solar": lambda: calc.solar_power,
-        "Grid": lambda: calc.grid_power,
-        "6 Amps (Slowest)": lambda: set_6_amps(charger)
+        "Slow-Battery (Battery or Solar)": (
+            calc.slow_battery_power if calc.bat_has_charge else calc.solar_power
+        ),
+        "Battery (Battery & Solar)": (
+            calc.fast_battery_power if calc.bat_has_charge else calc.solar_power
+        ),
+        "Solar": calc.solar_power,
+        "Grid": calc.grid_power,
+        "6 Amps (Slowest)": set_6_amps(charger),
     }
 
-    return power_map.get(charge_type, lambda: calc.solar_power)()
+    return power_map.get(charge_type, calc.solar_power)
 
 
 @service
@@ -140,10 +150,13 @@ def sync_car_to_solar():
     new_power = get_new_power(options.charge_type, calc, charger)
 
     if new_power:
-        state.set(var_name=f"dylscript.new_power",
-                          value=new_power, 	new_attributes={
+        state.set(
+            var_name=f"dylscript.new_power",
+            value=new_power,
+            new_attributes={
                 "device_class": "power",
                 "unit": "W",
-                "state_class": "measurement"
-            })
+                "state_class": "measurement",
+            },
+        )
         charger.set_power_limit(new_power)
