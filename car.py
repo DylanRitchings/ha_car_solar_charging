@@ -105,6 +105,21 @@ class Calculations:
                 state.set(var_name=f"dylscript.{key}",
                           value=value, 	new_attributes=attributes)
 
+def set_6_amps(charger):
+    charger.limit_current(6)
+    charger.switch_charger("on")
+    return ""
+
+def get_new_power(charge_type: str, calc: Calculations, charger: Charger):
+    power_map = {
+        "Slow-Battery (Battery or Solar)": lambda: calc.slow_battery_power if calc.bat_has_charge else calc.solar_power,
+        "Battery (Battery & Solar)": lambda: calc.fast_battery_power if calc.bat_has_charge else calc.solar_power,
+        "Solar": lambda: calc.solar_power,
+        "Grid": lambda: calc.grid_power,
+        "6 Amps (Slowest)": lambda: set_6_amps(charger)
+    }
+
+    return power_map.get(harge_type, lambda: calc.solar_power)()
 
 
 @service
@@ -122,19 +137,7 @@ def sync_car_to_solar():
 
     new_power = None
 
-    # TODO change to hashmap?
-    if options.charge_type == "Slow-Battery (Battery or Solar)" and calc.bat_has_charge:
-        new_power = calc.slow_battery_power
-    elif options.charge_type == "Battery (Battery & Solar)" and calc.bat_has_charge:
-        new_power = calc.fast_battery_power
-    elif options.charge_type == "Solar" or ("Battery" in options.charge_type and not calc.bat_has_charge):
-        new_power = calc.solar_power
-    elif options.charge_type == "Grid":
-        new_power = calc.grid_power
-    elif options.charge_type == "6 Amps (Slowest)":
-        charger.set_current_limit(6)
-        charger.switch_charger("on")
-        return ""
+    new_power = get_power(options.charge_type, calc, charger)
 
     if new_power:
         state.set(var_name=f"dylscript.new_power",
