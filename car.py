@@ -7,7 +7,7 @@ def watt(value: str | int | float) -> float:
 
 
 class House:
-    def __init__(self):
+    def __init__(self) -> None:
         self.INVERTER_MAX = kw(2.67)
         self.SOLAR_MAX = kw(3.67)
 
@@ -20,13 +20,13 @@ class House:
 
 
 class Options:
-    def __init__(self):
+    def __init__(self) -> None:
         self.charge_type = input_select.car_charging
         self.battery_min = 30
 
 
 class Charger:
-    def __init__(self):
+    def __init__(self) -> None:
         self.CHARGE_VOLTS = 230
         self.house_id = "e658d337f118a91c07ecc90b1482f639"  # move to state
         self.charger_id = "78ca94b33412b017cf3b53429b9a0b49"  # move to state
@@ -36,10 +36,10 @@ class Charger:
             state.get("number.28_oriel_road_available_current")
         )
 
-    def to_current(self, power):
+    def to_current(self, power: float) -> float:
         return watt(power) / self.CHARGE_VOLTS
 
-    def set_power_limit(self, new_load_power):
+    def set_power_limit(self, new_load_power: float) -> None:
 
         current = self.to_current(new_load_power)
         if current < 6:
@@ -50,7 +50,7 @@ class Charger:
             self.set_current_limit(current)
         self.switch_charger("on")
 
-    def set_current_limit(self, current: float):
+    def set_current_limit(self, current: float) -> None:
         log.warning(f"limit current: {int(current)}")
         zaptec.limit_current(
             blocking=False,
@@ -59,7 +59,7 @@ class Charger:
             available_current=int(current),
         )
 
-    def switch_charger(self, on_off: str):
+    def switch_charger(self, on_off: str) -> None:
         switch.charger_charging = on_off
         if on_off == "off":
             zaptec.stop_charging(device_id=self.charger_id)
@@ -69,7 +69,7 @@ class Charger:
 
 class Calculations:
 
-    def __init__(self, house: House, charger: Charger, options: Options):
+    def __init__(self, house: House, charger: Charger, options: Options) -> None:
         # todo put charger.load_power in avaliable power calculations maybe do an if statement checking if charging is on
         self.house_only_load_power = max(0, house.load_power - charger.load_power)
         self.available_solar_power = max(
@@ -93,7 +93,7 @@ class Calculations:
 
         self._set_states()
 
-    def _set_states(self):
+    def _set_states(self) -> None:
         for key, value in self.__dict__.items():
             attributes = {
                 "device_class": "power",
@@ -108,7 +108,7 @@ class Calculations:
                 )
 
 
-def set_6_amps(charger) -> None:
+def set_6_amps(charger: Charger) -> None:
     charger.set_current_limit(6)
     charger.switch_charger("on")
     return None
@@ -133,7 +133,7 @@ def get_new_power(
 
 
 @service
-def sync_car_to_solar():
+def sync_car_to_solar() -> None:
     options = Options()
     charger = Charger()
 
